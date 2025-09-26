@@ -70,6 +70,26 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
   - Random sampling surfaces quick spot-checks without dumping entire dataset; reproducible seeding prevents flake.
   - Writing Markdown may seem duplicative, yet it offers a ready-to-commit artifact for baseline reviews.
 
+### Validator Snapshot Workflow (R1.4)
+- **Purpose**
+  - Provide a deterministic alias (`reports/phaseA/runs/latest/`) for the most recent validation artifacts so documentation, QA, and CI can reference a stable path.
+- **Execution flow**
+  1. Run `make phaseA-validate` (or `python -m tools.validate_schema ... --summary`) which emits artifacts under a timestamped directory (e.g., `reports/phaseA/runs/20250926T054330Z/`).
+  2. Post-run helper script `scripts/update_latest_snapshot.sh` will remove any existing `reports/phaseA/runs/latest` directory/symlink and recreate it pointing at the new timestamp (implementation TBD).
+  3. Snapshot now contains `summary.json`, `issues.jsonl`, `dataset_summary.md`, and any future metric logs; docs refer to `reports/phaseA/runs/latest/...` so links stay stable.
+- **Helper commands**
+  - Add `make phaseA-snapshot` that wraps `make phaseA-validate` + summary + `scripts/update_latest_snapshot.sh`.
+  - `scripts/update_latest_snapshot.sh` responsibilities:
+    * Accept the timestamped run directory path.
+    * Handle both symlink (preferred on Unix) and directory copy fallback (for environments without symlink support).
+    * Log actions so CI artifacts show the linkage.
+- **Tradeoffs**
+  - Symlinks keep storage minimal but may require Windows-specific handling; copying is more portable but duplicates data. The helper script can detect platform and choose appropriately.
+  - Snapshot automation adds a small post-processing step yet saves manual bookkeeping when we publish baselines or diff runs.
+- **Documentation updates**
+  - `README.md`/`docs/phaseA.md` reference the latest snapshot path for baseline metrics and dataset QA.
+  - CI workflow (`.github/workflows/phaseA.yml`) can call `make phaseA-snapshot` to upload `reports/phaseA/runs/latest` as an artifact.
+
 ### Checkpoint A1 — Schema Definition & Seed Data (Day 0.5)
 **Objectives**: lock in `TicketTask` & `TicketResult` schemas; create labeled examples.
 - Tasks
