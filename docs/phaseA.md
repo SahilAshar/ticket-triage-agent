@@ -21,7 +21,7 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
   - `schemas.py` (or equivalent) with Pydantic models + JSON schema export.
   - `data/tickets_phaseA.jsonl` task set + `data/expected_results_phaseA.jsonl` gold labels.
   - README snippet describing determinism configuration.
-- **Smoke Test A1**: run schema validation script across both files (e.g., `python -m tools.validate_schema --tasks data/tickets_phaseA.jsonl --labels data/expected_results_phaseA.jsonl`) verifying schema compliance and one-to-one ticket_id alignment.
+- **Smoke Test A1**: run the schema validator (`python -m tools.validate_schema --tasks data/tickets_phaseA.jsonl --labels data/expected_results_phaseA.jsonl`). Passing both paths enforces schema compliance and one-to-one ticket_id alignment; you can also lint a single file in isolation by supplying only `--tasks` or `--labels`.
 
 ### Checkpoint A2 — Agent v0 Skeleton (Day 1)
 **Objectives**: implement a single-agent pipeline with minimal tool belt.

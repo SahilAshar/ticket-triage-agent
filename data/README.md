@@ -41,4 +41,6 @@ Confidence is currently a heuristic derived from difficulty:
 - `medium` → 0.8
 - `hard` (reserved for future additions) → 0.7
 
+Validate inputs with `python -m tools.validate_schema --tasks data/tickets_phaseA.jsonl` and labels with `python -m tools.validate_schema --labels data/expected_results_phaseA.jsonl`; pass both paths to enforce ticket_id reconciliation.
+
 These values act as placeholders until empirical calibration is available from live agent runs.
