@@ -9,6 +9,43 @@
 ## Workstream Timeline (1–2 days)
 Work through four mandatory checkpoints (A1–A4) plus an optional optimization (A5). Each checkpoint includes a smoke test that must pass before moving forward.
 
+### Configuration & Enforcement Blueprint (R1.2)
+- **Configuration surface**
+  - Authoritative defaults live in `config/agent.yaml`; group settings under `llm`, `runtime`, and `tooling` to mirror the agent layout.
+  - `ticket_agent/config.py` will expose a Pydantic model hierarchy to validate those values:
+    ```python
+    class LLMSettings(BaseModel):
+        model: str
+        temperature: float = 0.0
+        top_p: float = 1.0
+        max_tokens: int = 2048
+
+    class RuntimeLimits(BaseModel):
+        timeout_seconds: float = 30.0
+        tool_budget: int = 2
+        idempotency_prefix: str = "ticket_id"
+
+    class AgentSettings(BaseModel):
+        llm: LLMSettings
+        runtime: RuntimeLimits
+        tooling: ToolConfig
+    ```
+    `ToolConfig` will start as simple deterministic stubs (prompt IDs, response templates) and expand in later phases.
+- **Flow through the agent**
+  1. CLI entry point loads YAML → `AgentSettings` at process start; Pydantic validation fails fast if types/ranges drift.
+  2. The agent constructor receives `AgentSettings`, handing `llm` to the LLM client, `runtime` to the timeout/tool-budget guards, and `tooling` to the stub tool adapters.
+  3. Enforcement points:
+     - `temperature`, `top_p`, `max_tokens` applied when building the outbound LLM request.
+     - `tool_budget` tracked by a counter in the dispatcher; exceeding budget raises `ToolBudgetExceeded`.
+     - `timeout_seconds` wrapped around `run()` using a watchdog; hitting the ceiling raises `AgentTimeout`.
+     - `idempotency_prefix` combined with `ticket_id` + `model` to form the deterministic idempotency key (and cache key once available).
+- **Fail-fast stance**
+  - Phase A sticks with fail-fast: on budget/timeout breach, raise, emit a structured failure result (e.g., `confidence=0.0`, `failure_reason`), and surface the issue in logs/metrics. This keeps evaluation deterministic and makes regressions obvious.
+  - Future extensibility: blueprint reserves optional `fail_open` flags so later phases can downgrade to warnings or adaptive retries without refactoring.
+- **Tradeoffs**
+  - Pydantic adds strict typing and schema export at minimal cost (already a dependency).
+  - Centralized config keeps CI reproducible; per-task overrides are deferred to Phase B to avoid premature complexity.
+  - Fail-fast guarantees clean baselines; relaxing constraints can wait until caching/retry infrastructure is in place.
 ### Checkpoint A1 — Schema Definition & Seed Data (Day 0.5)
 **Objectives**: lock in `TicketTask` & `TicketResult` schemas; create labeled examples.
 - Tasks
