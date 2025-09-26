@@ -44,3 +44,4 @@ When you need to call tools from the shell, use this rubric:
 
 ## Notes
 - Prefer uv for Python dependency and environment management instead of pip/venv/poetry/pip-tools.
+- Prefer strong typing for all Python code. Focus on writing strong, maintainable, OOP oriented code.
