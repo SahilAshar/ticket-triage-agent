@@ -55,13 +55,13 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
   - Build evaluation harness that joins tasks and expected results on `ticket_id`, then compares `TicketResult` vs ground truth (accuracy metric definition, severity/category match, next-step check).
   - Introduce standardized reporting categories (schema failure, join mismatch, metric regression) backed by a reusable `EvaluationIssue` class for future extensibility.
   - Produce baseline metrics table saved to `reports/phaseA_baseline.md`.
-  - Add CI job (GitHub Actions or local `make` task) that runs schema validation + eval harness on PRs.
+  - Add CI job (GitHub Actions or local `make` task) that runs schema validation + eval harness (`make phaseA-validate` + `make phaseA-eval`) on PRs.
   - Ensure reproducibility: deterministic seeds, fixed model version/config.
 - Artifacts
-  - `evaluation/eval_ticket_agent.py` harness.
-  - CI configuration updates (`.github/workflows/phaseA.yml` or equivalent).
+  - `evaluation/` package (runner, metrics, evaluator, CLI).
+  - CI configuration updates (`.github/workflows/phaseA.yml`).
   - Baseline report committed.
-- **Smoke Test A4**: run `make phaseA-check` (or `tox -e phaseA`) locally to execute full pipeline; pass condition is ≥95% schema-valid outputs and baseline metric files regenerated without diff.
+- **Smoke Test A4**: run `make phaseA-eval` locally; pass condition is ≥95% schema-valid outputs and summary generated without diff.
 
 ### Checkpoint A5 (Optional) — Cache Integration & Cost Optimization
 **Objectives**: add cache layer keyed on `(prompt_hash, model)` with TTL.
