@@ -27,6 +27,12 @@ When you need to call tools from the shell, use this rubric:
 ## Python Tooling
 - Package Management & Virtual Envs: `uv`
   (fast replacement for pip/pip-tools/virtualenv; use `uv pip install ...`, `uv run ...`)
+  - Setup workflow:
+    1. `uv sync` — resolves dependencies and creates `.venv` using the Python version declared in `pyproject.toml` (`requires-python >= 3.13`).
+    2. `source .venv/bin/activate` — activate the environment so `python`/`pytest`/etc. run under Python 3.13.
+    3. Optionally use `uv run <command>` for one-off executions without activating the shell.
+    4. Verify with `python --version` (should report 3.13.x) before running tooling.
+  - Install new packages with `uv add <package>`.
 - Linting & Formatting: `ruff`
   (linter + formatter; use `ruff check .`, `ruff format .`)
 - Static Typing: `mypy`
@@ -34,7 +40,7 @@ When you need to call tools from the shell, use this rubric:
 - Security: `bandit`
   (Python security linter; use `bandit -r .`)
 - Testing: `pytest`
-  (test runner; use `pytest -q`, `pytest -k <pattern>` to filter tests)
+  (test runner; prefer `uv run pytest -q` or run after activating `.venv`; `pytest -k <pattern>` to filter tests)
 - Logging: `loguru`
   (runtime logging utility; import in code:
   ```python
