@@ -53,6 +53,7 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
 **Objectives**: formalize evaluation and gating.
 - Tasks
   - Build evaluation harness that joins tasks and expected results on `ticket_id`, then compares `TicketResult` vs ground truth (accuracy metric definition, severity/category match, next-step check).
+  - Introduce standardized reporting categories (schema failure, join mismatch, metric regression) backed by a reusable `EvaluationIssue` class for future extensibility.
   - Produce baseline metrics table saved to `reports/phaseA_baseline.md`.
   - Add CI job (GitHub Actions or local `make` task) that runs schema validation + eval harness on PRs.
   - Ensure reproducibility: deterministic seeds, fixed model version/config.
