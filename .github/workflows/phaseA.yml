@@ -33,4 +33,6 @@ jobs:
       - name: Sync dependencies
         run: uv sync
       - name: Run validator tests
-        run: uv run pytest tests/test_validate_schema.py
+        run: make phaseA-validate
+      - name: Run evaluation smoke test
+        run: make phaseA-eval
