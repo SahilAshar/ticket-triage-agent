@@ -15,12 +15,13 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
   - Draft JSON schema (or Pydantic models) capturing required fields, typing, constraints.
   - Document determinism knobs (temperature=0, max_tokens cap, tool budget ≤2, wall-clock timeout, idempotency key usage).
   - Write 25 curated ticket examples: mix of categories/severities, include edge cases that stress schema validation.
-  - Store examples in repo (e.g., `data/tickets_phaseA.jsonl`) with metadata for future reuse.
+  - Store inputs and gold labels separately (`data/tickets_phaseA.jsonl` + `data/expected_results_phaseA.jsonl`); keep formats aligned with `data/README.md`.
+  - Confirm difficulty labels live only with the expected results and are treated as internal debugging metadata.
 - Artifacts
   - `schemas.py` (or equivalent) with Pydantic models + JSON schema export.
-  - `data/tickets_phaseA.jsonl` labeled set.
+  - `data/tickets_phaseA.jsonl` task set + `data/expected_results_phaseA.jsonl` gold labels.
   - README snippet describing determinism configuration.
-- **Smoke Test A1**: run schema validation script against the 25 examples (`python -m tools.validate_schema data/tickets_phaseA.jsonl`) verifying 100% pass.
+- **Smoke Test A1**: run schema validation script across both files (e.g., `python -m tools.validate_schema --tasks data/tickets_phaseA.jsonl --labels data/expected_results_phaseA.jsonl`) verifying schema compliance and one-to-one ticket_id alignment.
 
 ### Checkpoint A2 — Agent v0 Skeleton (Day 1)
 **Objectives**: implement a single-agent pipeline with minimal tool belt.
@@ -46,12 +47,12 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
   - `logging/metrics.py` utilities.
   - Sample log file from smoke test.
   - Metrics summary file committed.
-- **Smoke Test A3**: execute `python scripts/run_agent.py --dataset data/tickets_phaseA.jsonl --limit 10 --emit-metrics` and verify logs include required fields (`accuracy`, `latency_ms`, `tokens_in`, `tokens_out`, `usd_cost`, `cache_hit`, `retries`, `failure_reason`).
+- **Smoke Test A3**: execute `python scripts/run_agent.py --tasks data/tickets_phaseA.jsonl --labels data/expected_results_phaseA.jsonl --limit 10 --emit-metrics` and verify logs include required fields (`accuracy`, `latency_ms`, `tokens_in`, `tokens_out`, `usd_cost`, `cache_hit`, `retries`, `failure_reason`).
 
 ### Checkpoint A4 — Eval Harness & CI Gate (Day 2)
 **Objectives**: formalize evaluation and gating.
 - Tasks
-  - Build evaluation harness that compares `TicketResult` vs ground truth (accuracy metric definition, severity/category match, next-step check).
+  - Build evaluation harness that joins tasks and expected results on `ticket_id`, then compares `TicketResult` vs ground truth (accuracy metric definition, severity/category match, next-step check).
   - Produce baseline metrics table saved to `reports/phaseA_baseline.md`.
   - Add CI job (GitHub Actions or local `make` task) that runs schema validation + eval harness on PRs.
   - Ensure reproducibility: deterministic seeds, fixed model version/config.
@@ -74,7 +75,7 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
 
 ## Testing Strategy
 - Unit tests: schemas, tool wrappers, metrics utilities (`pytest tests/`).
-- Integration tests: smoke scripts per checkpoint; evaluation harness using labeled dataset.
+- Integration tests: smoke scripts per checkpoint; evaluation harness using the split datasets referenced in `data/README.md`.
 - Determinism tests: repeat agent runs (`python scripts/run_agent.py --repeat 3 --seed 42`) to ensure identical outputs.
 - CI: enforce schema validation + evaluation; block if metrics regress beyond thresholds.
 
@@ -95,7 +96,7 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
 - Timeboxed scope: defer advanced tools (e.g., RAG) until failing tests require them.
 
 ## Acceptance Checklist (Exit Criteria)
-- [ ] Schemas + dataset landed and validated.
+- [ ] Schemas + split datasets landed, validated, and cross-checked.
 - [ ] Agent v0 produces schema-valid outputs on sample set.
 - [ ] Metrics logging yields accuracy, p95 latency, cost per task.
 - [ ] Eval harness + CI gate operational with reproducible runs.

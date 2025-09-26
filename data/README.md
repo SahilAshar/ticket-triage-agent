@@ -10,7 +10,6 @@
 `tickets_phaseA.jsonl`
 ```json
 {
-  "difficulty": "easy | medium | hard",
   "task": {
     "ticket_id": "TKT-XXXX",
     "title": "…",
@@ -33,6 +32,8 @@
   }
 }
 ```
+
+> Difficulty is reserved for internal debugging/analysis and must never be surfaced to the agent ingress.
 
 ### Confidence Values
 Confidence is currently a heuristic derived from difficulty:
