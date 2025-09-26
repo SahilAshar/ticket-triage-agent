@@ -46,6 +46,30 @@ Work through four mandatory checkpoints (A1–A4) plus an optional optimization 
   - Pydantic adds strict typing and schema export at minimal cost (already a dependency).
   - Centralized config keeps CI reproducible; per-task overrides are deferred to Phase B to avoid premature complexity.
   - Fail-fast guarantees clean baselines; relaxing constraints can wait until caching/retry infrastructure is in place.
+
+### Dataset QA Summary (R1.3)
+- **Approach**
+  - Extend `tools.validate_schema` with an optional `--summary` flag instead of creating a separate script. Keeping all dataset validation in one CLI avoids drift and leverages the existing JSONL parser.
+  - Summary run emits a JSON object to stdout and writes a Markdown snippet to `reports/phaseA/runs/latest/dataset_summary.md` for humans.
+- **Emitted statistics**
+  1. `record_count`: number of tasks/labels processed per file.
+  2. `difficulty_distribution`: counts by difficulty label (only from expected results).
+  3. `duplicate_ticket_ids`: list of duplicates detected (empty when clean).
+  4. `missing_vs_orphan_counts`: counts for missing labels and orphan labels.
+  5. `random_schema_samples`: up to 3 ticket IDs per file that passed validation for spot auditing.
+  6. `last_modified`: filesystem timestamp for each dataset file so CI diffs are obvious.
+- **Flags & UX**
+  - `--summary` enables aggregation; combine with `--tasks`/`--labels`.
+  - `--sample-size N` (default `3`) controls how many random schema-valid IDs to include. Sample selection seeded with `--seed` (default `42`) for reproducibility.
+  - Summary JSON is print-only; Markdown artifact is written when `--output-dir` is provided (defaults to `reports/phaseA/runs/latest`).
+- **Documentation touchpoints**
+  - `data/README.md` will describe the command, expected JSON fields, and how to interpret distributions.
+  - CI (`make phaseA-validate`) can incorporate `--summary --output-dir reports/phaseA/runs/latest` once implemented.
+- **Tradeoffs**
+  - CLI extension keeps logic centralized but makes the command slightly heavier; mitigated by keeping summary optional.
+  - Random sampling surfaces quick spot-checks without dumping entire dataset; reproducible seeding prevents flake.
+  - Writing Markdown may seem duplicative, yet it offers a ready-to-commit artifact for baseline reviews.
+
 ### Checkpoint A1 — Schema Definition & Seed Data (Day 0.5)
 **Objectives**: lock in `TicketTask` & `TicketResult` schemas; create labeled examples.
 - Tasks
