@@ -1,0 +1,36 @@
+name: Phase A Validation
+
+on:
+  push:
+    paths:
+      - 'tools/**'
+      - 'tests/**'
+      - 'data/**'
+      - 'docs/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/phaseA.yml'
+      - 'Makefile'
+  pull_request:
+    paths:
+      - 'tools/**'
+      - 'tests/**'
+      - 'data/**'
+      - 'docs/**'
+      - 'pyproject.toml'
+      - 'uv.lock'
+      - '.github/workflows/phaseA.yml'
+      - 'Makefile'
+
+jobs:
+  validator:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v3
+        with:
+          version: "latest"
+      - name: Sync dependencies
+        run: uv sync
+      - name: Run validator tests
+        run: uv run pytest tests/test_validate_schema.py
